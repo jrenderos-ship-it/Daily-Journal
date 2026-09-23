@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="format-detection" content="telephone=no">
+<title>Bright Spots</title>
+
+<!-- iOS "Add to Home Screen" app behavior -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bright Spots">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#3d6a51">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #f4f2ea;
+    --surface: #ffffff;
+    --surface-sunken: #eae6d8;
+    --ink: #24291f;
+    --muted: #6c7060;
+    --line: #ddd7c2;
+    --accent: #3d6a51;
+    --accent-ink: #2a4c39;
+    --accent-soft: #dfe9de;
+    --gold: #a8791f;
+    --gold-soft: #f1e3c3;
+    --shadow: 0 1px 2px rgba(36,41,31,0.07), 0 4px 14px rgba(36,41,31,0.05);
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14170f;
+      --surface: #1d2117;
+      --surface-sunken: #262b1d;
+      --ink: #eee9d8;
+      --muted: #9aa08a;
+      --line: #333824;
+      --accent: #6fa886;
+      --accent-ink: #a6d3b8;
+      --accent-soft: #26362b;
+      --gold: #d9ac52;
+      --gold-soft: #362c16;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.25);
+    }
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    padding: calc(22px + env(safe-area-inset-top, 0px)) 16px calc(56px + env(safe-area-inset-bottom, 0px));
+    overscroll-behavior-y: contain;
+  }
+  .wrap { max-width: 520px; margin: 0 auto; }
+  [hidden] { display: none !important; }
+
+  h1, h2, .display { font-family: 'Fraunces', Georgia, serif; letter-spacing: 0.005em; margin: 0; }
+
+  .header { margin-bottom: 18px; }
+  .header .kicker { font-size: 13px; color: var(--muted); margin-bottom: 3px; }
+  .header h1 { font-size: 30px; font-weight: 600; }
+  .header .sub { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+  .stat-row { display: flex; gap: 10px; margin-bottom: 18px; }
+  .stat-card {
+    flex: 1; background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 14px 16px; box-shadow: var(--shadow);
+  }
+  .stat-num { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; color: var(--accent-ink); font-variant-numeric: tabular-nums; }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .section-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 9px 2px; }
+
+  .heatmap { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 22px; }
+  .cell { aspect-ratio: 1; border-radius: 5px; background: var(--surface-sunken); border: 1px solid var(--line); }
+  .cell.level-1 { background: color-mix(in srgb, var(--accent) 34%, var(--surface-sunken)); border-color: transparent; }
+  .cell.level-2 { background: color-mix(in srgb, var(--accent) 66%, var(--surface-sunken)); border-color: transparent; }
+  .cell.level-3 { background: var(--accent); border-color: transparent; }
+  .cell.today { box-shadow: 0 0 0 2px var(--gold) inset; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+    padding: 20px; box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .card h2 { font-size: 19px; font-weight: 600; margin-bottom: 3px; }
+  .card .sub { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+
+  .field { margin-bottom: 14px; }
+  .field:last-of-type { margin-bottom: 0; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--accent-ink); margin-bottom: 5px; }
+  .field textarea {
+    width: 100%; min-height: 54px; resize: vertical; font-family: inherit; font-size: 16px; line-height: 1.45;
+    padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-sunken);
+    color: var(--ink);
+  }
+  .field textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .field textarea::placeholder { color: var(--muted); opacity: 0.75; }
+
+  .save-btn {
+    width: 100%; margin-top: 4px; padding: 13px; border-radius: 10px; border: none;
+    background: var(--accent); color: #fff; font-family: inherit; font-weight: 600; font-size: 15px; cursor: pointer;
+  }
+  .save-btn:active { opacity: 0.85; }
+  .save-btn:disabled { opacity: 0.55; cursor: default; }
+  .toast { text-align: center; font-size: 12px; color: var(--muted); margin-top: 8px; min-height: 16px; }
+
+  .entry { border-top: 1px solid var(--line); padding: 14px 0; }
+  .entry:first-of-type { border-top: none; padding-top: 4px; }
+  .entry-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer;
+    background: none; border: none; width: 100%; text-align: left; padding: 0; font-family: inherit; color: var(--ink);
+  }
+  .entry-date { font-family: 'Fraunces', serif; font-size: 15.5px; font-weight: 600; }
+  .entry-meta { display: flex; align-items: center; gap: 8px; }
+  .entry-pill {
+    font-size: 11px; font-weight: 600; color: var(--accent-ink); background: var(--accent-soft);
+    padding: 3px 8px; border-radius: 999px;
+  }
+  .entry-chevron { color: var(--muted); font-size: 13px; transition: transform 0.15s ease; }
+  .entry.open .entry-chevron { transform: rotate(90deg); }
+  .entry-body { display: none; margin-top: 12px; }
+  .entry.open .entry-body { display: block; }
+  .entry-field { margin-bottom: 10px; }
+  .entry-field:last-child { margin-bottom: 0; }
+  .entry-field .k { font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px; }
+  .entry-field .v { font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+  .empty-log { font-size: 13.5px; color: var(--muted); padding: 6px 0 2px; }
+
+  .delete-row { text-align: center; margin-top: 10px; }
+  .delete-link { background: none; border: none; font-family: inherit; font-size: 12px; color: var(--muted); cursor: pointer; padding: 4px; text-decoration: underline; }
+
+  footer { font-size: 12px; color: var(--muted); text-align: center; margin-top: 26px; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="kicker" id="today-date">—</div>
+    <h1>Bright Spots</h1>
+    <div class="sub">A few good things, every day.</div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-num" id="streak-num">0</div>
+      <div class="stat-label">day streak</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="total-num">0</div>
+      <div class="stat-label">entries logged</div>
+    </div>
+  </div>
+
+  <div class="section-title">Last 35 days</div>
+  <div class="heatmap" id="heatmap"></div>
+
+  <div class="card">
+    <h2>Today's entry</h2>
+    <div class="sub" id="entry-sub">There's no wrong way to do this — one line is plenty.</div>
+
+    <div class="field">
+      <label for="f-grateful">Grateful for</label>
+      <textarea id="f-grateful" placeholder="Three little things, or just one — coffee, a text, the weather..."></textarea>
+    </div>
+    <div class="field">
+      <label for="f-win">Today's win</label>
+      <textarea id="f-win" placeholder="Something that went right today, however small..."></textarea>
+    </div>
+    <div class="field">
+      <label for="f-you">You</label>
+      <textarea id="f-you" placeholder="A kind word for yourself, or how you're really doing..."></textarea>
+    </div>
+
+    <button class="save-btn" id="save-btn">Save today's entry</button>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <div class="card">
+    <h2>Journal</h2>
+    <div class="sub">Your past entries, most recent first</div>
+    <div id="journal"></div>
+  </div>
+
+  <footer>
+    Some days the good stuff is obvious. Some days you have to go looking. Both count.<br>
+    <span style="opacity:0.75;">Saved privately on this device, in this browser.</span>
+  </footer>
+
+</div>
+
+<script>
+  const FIELDS = ['grateful','win','you'];
+  const LABELS = { grateful: 'Grateful for', win: "Today's win", you: 'You' };
+  const STORE_KEY = 'brightSpotsEntries';
+
+  let entries = {}; // dateKey -> { grateful, win, you, checkedIn, date, savedAt }
+
+  function fmtKey(d){
+    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }
+  function startOfDay(d){ const n=new Date(d); n.setHours(0,0,0,0); return n; }
+  function isWeekend(d){ const day = d.getDay(); return day === 0 || day === 6; }
+  function filledCount(e){
+    if(!e) return 0;
+    return FIELDS.filter(k => e[k] && String(e[k]).trim().length > 0).length;
+  }
+  function isCheckedIn(e){ return !!e && filledCount(e) > 0; }
+
+  function computeStreak(){
+    let streak = 0;
+    let d = startOfDay(new Date());
+    if(!isCheckedIn(entries[fmtKey(d)])){ d.setDate(d.getDate()-1); }
+    while(true){
+      if(isWeekend(d)){ d.setDate(d.getDate()-1); continue; }
+      const key = fmtKey(d);
+      if(isCheckedIn(entries[key])){ streak++; d.setDate(d.getDate()-1); }
+      else break;
+    }
+    return streak;
+  }
+
+  function loadEntries(){
+    try{
+      const raw = localStorage.getItem(STORE_KEY);
+      if(raw) entries = JSON.parse(raw) || {};
+    }catch(e){ entries = {}; }
+  }
+  function persistEntries(){
+    try{
+      localStorage.setItem(STORE_KEY, JSON.stringify(entries));
+      return true;
+    }catch(e){ return false; }
+  }
+
+  function renderHeader(){
+    const now = new Date();
+    document.getElementById('today-date').textContent = now.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'});
+  }
+  function renderStats(){
+    document.getElementById('streak-num').textContent = computeStreak();
+    document.getElementById('total-num').textContent = Object.keys(entries).filter(k=>isCheckedIn(entries[k])).length;
+  }
+  function renderHeatmap(){
+    const container = document.getElementById('heatmap');
+    container.innerHTML = '';
+    const todayKey = fmtKey(new Date());
+    for(let i=34; i>=0; i--){
+      const d = new Date(); d.setDate(d.getDate()-i);
+      const key = fmtKey(d);
+      const count = filledCount(entries[key]);
+      const level = count === 0 ? 0 : Math.min(count, 3);
+      const cell = document.createElement('div');
+      cell.className = `cell level-${level}` + (key === todayKey ? ' today' : '');
+      const dLabel = d.toLocaleDateString('en-US',{month:'short', day:'numeric'});
+      cell.title = count > 0 ? `${dLabel}: ${count}/3 filled` : `${dLabel}: no entry`;
+      container.appendChild(cell);
+    }
+  }
+  function renderForm(){
+    const key = fmtKey(new Date());
+    const e = entries[key] || {};
+    FIELDS.forEach(k=>{ document.getElementById('f-'+k).value = e[k] || ''; });
+  }
+  function renderJournal(){
+    const container = document.getElementById('journal');
+    container.innerHTML = '';
+    const todayKey = fmtKey(new Date());
+    const keys = Object.keys(entries)
+      .filter(k => k !== todayKey && isCheckedIn(entries[k]))
+      .sort((a,b)=> a < b ? 1 : -1)
+      .slice(0, 200);
+
+    if(keys.length === 0){
+      const p = document.createElement('div');
+      p.className = 'empty-log';
+      p.textContent = 'No past entries yet — today is where the log starts.';
+      container.appendChild(p);
+      return;
+    }
+
+    keys.forEach(key=>{
+      const e = entries[key];
+      const d = new Date(key + 'T00:00:00');
+      const div = document.createElement('div');
+      div.className = 'entry';
+      const count = filledCount(e);
+      div.innerHTML = `
+        <button class="entry-head" type="button">
+          <span class="entry-date">${d.toLocaleDateString('en-US',{weekday:'short', month:'short', day:'numeric'})}</span>
+          <span class="entry-meta">
+            <span class="entry-pill">${count}/3</span>
+            <span class="entry-chevron">▸</span>
+          </span>
+        </button>
+        <div class="entry-body">
+          ${FIELDS.filter(k=>e[k] && String(e[k]).trim()).map(k=>`
+            <div class="entry-field">
+              <div class="k">${LABELS[k]}</div>
+              <div class="v"></div>
+            </div>`).join('')}
+        </div>`;
+      const vs = div.querySelectorAll('.entry-field .v');
+      const filledKeys = FIELDS.filter(k=>e[k] && String(e[k]).trim());
+      filledKeys.forEach((k,i)=>{ vs[i].textContent = e[k]; });
+      div.querySelector('.entry-head').addEventListener('click', ()=>{ div.classList.toggle('open'); });
+      container.appendChild(div);
+    });
+  }
+
+  function saveEntry(){
+    const btn = document.getElementById('save-btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    const key = fmtKey(new Date());
+    const entry = { date: key };
+    FIELDS.forEach(k=>{ entry[k] = document.getElementById('f-'+k).value.trim(); });
+    entry.checkedIn = filledCount(entry) > 0;
+    entry.savedAt = new Date().toISOString();
+    entries[key] = entry;
+    const ok = persistEntries();
+
+    btn.disabled = false;
+    btn.textContent = "Save today's entry";
+    document.getElementById('toast').textContent = ok ? 'Saved ✓' : 'Could not save — storage may be full or blocked';
+
+    renderStats();
+    renderHeatmap();
+    renderJournal();
+  }
+
+  (function init(){
+    renderHeader();
+    document.getElementById('save-btn').addEventListener('click', saveEntry);
+    loadEntries();
+    renderStats();
+    renderHeatmap();
+    renderForm();
+    renderJournal();
+  })();
+</script>
+</body>
+</html>
